@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inversiones Radar</title>
+
+<!-- Iconos para iOS -->
+<link rel="apple-touch-icon" sizes="180x180" href="logo-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Inversiones Radar">
+<meta name="theme-color" content="#0f1116">
+
+<!-- Manifest (Android/otros) -->
+<link rel="manifest" href="manifest.webmanifest">
+
+<style>
+  body{background:#0f1116;color:#e5e7eb;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;
+       display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center}
+  .card{max-width:520px;padding:28px;border:1px solid #23293a;border-radius:16px;background:#151923}
+  a.btn{display:inline-block;padding:12px 18px;margin-top:12px;border-radius:10px;border:1px solid #2f3850;text-decoration:none;color:#e5e7eb}
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Inversiones Radar</h1>
+    <p>Para instalar en iPhone: <br><b>Compartir → Añadir a pantalla de inicio</b></p>
+    <p><a id="go" class="btn" href="#">Entrar ahora</a></p>
+  </div>
+
+<script>
+  // ✅ TU URL real de Streamlit:
+  const TARGET = "https://inversiones-radar-pro-pbtplsc7g33gnpj5v9xyif.streamlit.app/";
+  document.getElementById("go").href = TARGET;
+
+  // Si se abre desde el icono (modo standalone), redirige automático
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  if (isStandalone) window.location.replace(TARGET);
+</script>
+</body>
+</html>
+
