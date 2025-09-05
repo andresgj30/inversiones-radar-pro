@@ -1,4 +1,3 @@
-
 """
 App: Radar de Noticias de Impacto (Binarias/Scalping)
 -----------------------------------------------------
@@ -28,8 +27,8 @@ Notas
 © 2025 — Uso educativo. No es asesoría financiera.
 """
 
-
 import streamlit as st
+from streamlit_autorefresh import st_autorefresh   # ✅ CORRECCIÓN: usar este autorefresh
 import feedparser
 import pandas as pd
 import numpy as np
@@ -41,6 +40,9 @@ from urllib.parse import urlparse
 import plotly.express as px
 from math import exp, log
 
+# === Ajustes visuales ===
+st.set_page_config(page_title="Radar de Noticias de Impacto", layout="wide", page_icon="🧭")
+px.defaults.template = "plotly_dark"
 
 # === Configuración base ===
 APP_TZ = "America/Panama"
@@ -149,7 +151,6 @@ KEYWORD_TO_ASSETS = {
 DEFAULT_WATCHLIST = ["EURUSD","GBPUSD","USDJPY","USDCHF","USDCAD","AUDUSD",
                      "XAUUSD","BTCUSD","ETHUSD","US500","DE40","OIL"]
 
-
 def load_feeds():
     """Lee feeds.json o usa una lista por defecto."""
     try:
@@ -172,9 +173,10 @@ def load_feeds():
             "https://www.eleconomista.es/rss/rss_economia.php",
             "https://e00-expansion.uecdn.es/rss/economia.xml",
             "https://feeds.elpais.com/mrp/rss/elpais/cincodias/portada",
+
             # Panamá (si fallan, edítalos en feeds.json)
             "https://www.prensa.com/arcio/rss/economia/",
-            "https://www.anpanama.com/rss",   # si no funciona, edítalo
+            "https://www.anpanama.com/rss",
             "https://news.google.com/rss/search?q=mercados+OR+bolsa+OR+econom%C3%ADa&hl=es-419&gl=PA&ceid=PA:es-419",
         ]
 
@@ -192,7 +194,6 @@ def to_dt(entry):
 def domain_weight(link:str) -> float:
     try:
         netloc = urlparse(link).netloc.lower()
-        # quitar subdominios
         parts = netloc.split(".")
         dom = ".".join(parts[-2:]) if len(parts)>=2 else netloc
         return SOURCE_WEIGHTS.get(dom, DEFAULT_SOURCE_WEIGHT)
@@ -254,8 +255,7 @@ def fetch_all(feeds, max_items=MAX_ITEMS_PER_FEED):
                     "buzz_score": round(buzz, 5),
                     "source": urlparse(link).netloc or urlparse(url).netloc,
                 })
-        except Exception as ex:
-            # Continúa con el siguiente feed
+        except Exception:
             continue
     if not rows:
         return pd.DataFrame(columns=["id","time","time_ago_min","title","summary","link","assets","impact","source_weight","recency","buzz_score","source"])
@@ -275,7 +275,6 @@ def aggregate_trends(df: pd.DataFrame, within_minutes: int = 360):
     for _, r in dff.iterrows():
         assets = [a.strip() for a in (r["assets"] or "").split(",") if a.strip()]
         if not assets:
-            # intenta inferir sesgo general por keywords (opcional)
             continue
         for a in assets:
             assets_expanded.append((a, r["buzz_score"]))
@@ -295,9 +294,7 @@ def send_telegram(token: str, chat_id: str, text: str) -> bool:
     except Exception:
         return False
 
-
 # ============== UI ==============
-st.set_page_config(page_title="Radar de Noticias de Impacto", layout="wide")
 st.title("📈 Radar de Noticias de Impacto")
 st.caption("Agregador de noticias (RSS) + heurísticas de impacto para detectar temas que pueden generar volatilidad.")
 
@@ -328,12 +325,12 @@ st.write(f"Fuentes activas: {len(feeds)}")
 if st.button("Actualizar ahora"):
     st.session_state["last_fetch"] = 0  # fuerza refresco abajo
 
-# Control de autorefresco básico
+# Control de autorefresco (✅ usando st_autorefresh)
 now_ts = time.time()
 last_fetch = st.session_state.get("last_fetch", 0)
 need_refresh = (now_ts - last_fetch) > (CACHE_TTL_MIN * 60)
-if refresh_min > 0:
-    st.autorefresh(interval=refresh_min*60*1000, key="autoref")
+if refresh_min and refresh_min > 0:
+    st_autorefresh(interval=int(refresh_min*60*1000), key="autoref")
 
 if (last_fetch == 0) or need_refresh:
     df = fetch_all(feeds)
@@ -402,7 +399,6 @@ if cfg.get("enable_alerts") and cfg.get("tg_token") and cfg.get("tg_chat_id"):
         if ok: sent += 1
     if sent:
         st.success(f"Alertas enviadas: {sent}")
-
 
 st.divider()
 st.caption("Este panel prioriza recencia + impacto por palabras clave + reputación de fuente. Ajusta 'feeds.json' y los pesos para tu operativa.")
