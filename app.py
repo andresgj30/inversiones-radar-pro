@@ -44,6 +44,13 @@ from math import exp, log
 st.set_page_config(page_title="Radar de Noticias de Impacto", layout="wide", page_icon="🧭")
 px.defaults.template = "plotly_dark"
 
+# Botón para instalar en iPhone (GitHub Pages)
+PAGES_URL = "https://andresgj30.github.io/inversiones-radar-pro/"
+st.markdown(
+    f'<div style="text-align:right;"><a href="{PAGES_URL}" target="_blank">📲 Instalar en iPhone</a></div>',
+    unsafe_allow_html=True
+)
+
 # === Configuración base ===
 APP_TZ = "America/Panama"
 HALF_LIFE_HOURS = 6.0  # vida media del factor "recencia"
